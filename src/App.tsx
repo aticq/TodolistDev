@@ -34,6 +34,9 @@ function App() {
             {id: v1(), title: "GraphQL2", isDone: false},
         ]
     });
+    const removeToDoList = (ToDoListID: string) => {
+      setToDoLists(ToDoLists.filter(el=>el.id!==ToDoListID))
+    }
 
     function removeTask(ToDoListID: string,taskID: string) {
         setTasks({...tasks,[ToDoListID]:tasks[ToDoListID].filter(el=>el.id!==taskID)})
@@ -74,10 +77,10 @@ function App() {
                 let tasksForTodolist = tasks[El.id];
 
                 if (El.filter === "active") {
-                    tasksForTodolist = tasks[El.id].filter(t => t.isDone === false);
+                    tasksForTodolist = tasks[El.id].filter(t => !t.isDone);
                 }
                 if (El.filter === "completed") {
-                    tasksForTodolist = tasks[El.id].filter(t => t.isDone === true);
+                    tasksForTodolist = tasks[El.id].filter(t => t.isDone);
                 }
                 return (
                     <Todolist key={El.id}
@@ -89,6 +92,7 @@ function App() {
                               addTask={addTask}
                               changeTaskStatus={changeStatus}
                               filter={El.filter}
+                              removeToDoList={removeToDoList}
                     />
                 )
             })}
