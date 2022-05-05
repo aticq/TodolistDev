@@ -1,32 +1,33 @@
 import React, {useState} from 'react';
 import './App.css';
-import {Todolist} from './Todolist';
-import {v1} from 'uuid';
+import Todolist from "./Todolist";
+import {v1} from "uuid";
 
-export type FilterValuesType = "all" | "active" | "completed";
-export type ToDoListsType = {
+type todolistsType = {
     id: string
     title: string
-    filter: FilterValuesType
+    filter: 'All' | 'Completed' | 'Active'
 }
 
+
 function App() {
-    let todolistID1=v1();
-    let todolistID2=v1();
-    let [ToDoLists, setToDoLists] = useState<Array<ToDoListsType>>([
-        {id: todolistID1, title: 'What to learn', filter: 'all'},
-        {id: todolistID2, title: 'What to buy', filter: 'all'},
+    let todolistID1 = v1();
+    let todolistID2 = v1();
+
+    let [todolists, setTodolists] = useState<Array<todolistsType>>([
+        {id: todolistID1, title: 'What to learn', filter: 'All'},
+        {id: todolistID2, title: 'What to buy', filter: 'All'},
     ])
 
     let [tasks, setTasks] = useState({
-        [todolistID1]:[
+        [todolistID1]: [
             {id: v1(), title: "HTML&CSS", isDone: true},
             {id: v1(), title: "JS", isDone: true},
             {id: v1(), title: "ReactJS", isDone: false},
             {id: v1(), title: "Rest API", isDone: false},
             {id: v1(), title: "GraphQL", isDone: false},
         ],
-        [todolistID2]:[
+        [todolistID2]: [
             {id: v1(), title: "HTML&CSS2", isDone: true},
             {id: v1(), title: "JS2", isDone: true},
             {id: v1(), title: "ReactJS2", isDone: false},
@@ -34,70 +35,61 @@ function App() {
             {id: v1(), title: "GraphQL2", isDone: false},
         ]
     });
-    const removeToDoList = (ToDoListID: string) => {
-      setToDoLists(ToDoLists.filter(el=>el.id!==ToDoListID))
+
+
+    const addTask = (todolistID: string, text: string) => {
+        let newTask = {id: v1(), title: text, isDone: false}
+/*        setTasks([newTask, ...tasks])*/
+        setTasks({...tasks,[todolistID]:[newTask,...tasks[todolistID]]})
+
     }
 
-    function removeTask(ToDoListID: string,taskID: string) {
-        setTasks({...tasks,[ToDoListID]:tasks[ToDoListID].filter(el=>el.id!==taskID)})
-/*        let filteredTasks = tasks.filter(t => t.id != taskID);
-        setTasks(filteredTasks);*/
+    const filterTask = (todolistID: string, filterAmount: 'All' | 'Completed' | 'Active') => {
+        setTodolists([...todolists.map(El => todolistID === El.id ? {...El, filter: filterAmount} : El)])
     }
-
-    function addTask(ToDoListID: string,title: string) {
-        let newTask = {id: v1(), title: title, isDone: false};
-        //let newTasks = [task, ...tasks];
-        //setTasks(newTasks);*/
-        setTasks({...tasks,[ToDoListID]:[...tasks[ToDoListID],newTask]})
+    const removeTask = (todolistID: string, id: string) => {
+/*        setTasks(tasks.filter(El => El.id !== id))*/
+        setTasks({...tasks,[todolistID]:tasks[todolistID].filter(El=>El.id!==id)})
     }
-
-    function changeStatus(ToDoListID: string,taskId: string, isDone: boolean) {
-        setTasks({...tasks,[ToDoListID]:tasks[ToDoListID].map(El=>El.id===taskId?{...El,isDone:isDone}:El)})
-/*        let task = tasks.find(t => t.id === taskId);
-        if (task) {
-            task.isDone = isDone;
-        }
-
-        setTasks([...tasks]);*/
-    }
-
-
-    function changeFilter(ToDoListID: string, value: FilterValuesType) {
-        /*        setFilter(value);*/
-        setToDoLists(ToDoLists.map((El) => {
+    const checkBoxChanger = (todolistID:string,id: string, isFalse: boolean) => {
+/*        setTasks([...tasks.map((El) => {
             return (
-                El.id === ToDoListID ? {...El, filter: value} : El
+                id === El.id ? {...El, isDone: isFalse} : El
             )
-        }))
+        })])*/
+        setTasks({...tasks,[todolistID]:tasks[todolistID].map(El=>El.id===id ? {...El,isDone:isFalse}:El)})
     }
-
+    function removeTodolist(todolistID: string){
+        setTodolists(todolists.filter(El=>El.id!==todolistID))
+    delete tasks[todolistID]
+    }
     return (
         <div className="App">
-            {ToDoLists.map((El) => {
-                let tasksForTodolist = tasks[El.id];
-
-                if (El.filter === "active") {
-                    tasksForTodolist = tasks[El.id].filter(t => !t.isDone);
+            {todolists.map((todolistsEl) => {
+                let filteredTasks = tasks[todolistsEl.id]
+                if (todolistsEl.filter === "Active") {
+                    filteredTasks = tasks[todolistsEl.id].filter(El => !El.isDone)
                 }
-                if (El.filter === "completed") {
-                    tasksForTodolist = tasks[El.id].filter(t => t.isDone);
+                if (todolistsEl.filter === "Completed") {
+                    filteredTasks = tasks[todolistsEl.id].filter(El => El.isDone)
                 }
                 return (
-                    <Todolist key={El.id}
-                              ToDoListID={El.id}
-                              title={El.title}
-                              tasks={tasksForTodolist}
-                              removeTask={removeTask}
-                              changeFilter={changeFilter}
-                              addTask={addTask}
-                              changeTaskStatus={changeStatus}
-                              filter={El.filter}
-                              removeToDoList={removeToDoList}
+                    <Todolist
+                        key={todolistsEl.id}
+                        todolistID={todolistsEl.id}
+                        TodolistTitle={todolistsEl.title}
+                        tasks={filteredTasks}
+                        filterTask={filterTask}
+                        removeTask={removeTask}
+                        addTask={addTask}
+                        checkBoxChanger={checkBoxChanger}
+                        filter={todolistsEl.filter}
+                        removeTodolist={removeTodolist}
                     />
                 )
             })}
-
         </div>
+
     );
 }
 
